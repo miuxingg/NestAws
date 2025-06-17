@@ -15,23 +15,29 @@ jobs:
 
       - name: Set up SSH key with passphrase
         run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
-          chmod 600 key.pem
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
-          # Use ssh-askpass trick
+          # Start ssh-agent
+          eval "$(ssh-agent -s)"
+
+          # Workaround for passphrase using ssh-askpass
           sudo apt-get update
           sudo apt-get install -y ssh-askpass
 
-          DISPLAY=:0
-          SSH_ASKPASS=$(which ssh-askpass)
-          export DISPLAY SSH_ASKPASS
+          export DISPLAY=:0
+          export SSH_ASKPASS=$(command -v ssh-askpass)
+          echo "${{ secrets.EC2_SSH_PASSPHRASE }}" > passphrase.txt
+          chmod +x passphrase.txt
 
-          setsid ssh-add key.pem <<< "${{ secrets.EC2_SSH_PASSPHRASE }}"
+          # Use setsid to allow SSH_ASKPASS to provide passphrase
+          setsid ssh-add ~/.ssh/id_rsa < passphrase.txt
 
       - name: Add EC2 to known hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
 
       - name: SSH to EC2 and deploy
         run: |
