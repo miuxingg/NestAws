@@ -30,7 +30,7 @@ RUN yarn install --frozen-lockfile --production
 COPY --from=builder /app/dist ./dist
 
 # Expose application port
-EXPOSE 3000
+EXPOSE 5050
 
 # Start the application
 CMD ["yarn", "start:prod"]

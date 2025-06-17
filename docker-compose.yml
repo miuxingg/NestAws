@@ -6,20 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - '3000:3000'
+      - '5050:5050'
     environment:
       - NODE_ENV=production
     restart: unless-stopped
-
-  backend-dev:
-    build:
-      context: .
-      target: builder
-    ports:
-      - '3000:3000'
-    volumes:
-      - .:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
-    command: yarn start:dev
